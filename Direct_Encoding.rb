@@ -5,29 +5,29 @@ def define_variables(n,file)
         1.upto(n**2) do |j|
             file.print "p(x_#{i}=#{j}) "
         end
+        file.puts ""
 
         1.upto(n**2) do |j|
             (j+1).upto(n**2) do |k|
                 file.puts "¬p(x_#{i}=#{j}) ¬p(x_#{i}=#{k})"
             end
         end
-
     end
 end
 
 def define_constraints(n,m,file)
-    3.times do |i|
-        comb = _define_constraints(n-1,m,1+i,1,[1+i])
-        __define_constraints(n, m, file, comb)
+    n.times do |i|
+        comb = _define_constraints(n-1,m,1+i*n,1,[1+i*n])
+        __define_constraints(n, m, file, comb, "", 0)
     end
 
-    3.times do |i|
+    n.times do |i|
         comb = _define_constraints(n-1, m, 1+i, n, [1+i])
-        __define_constraints(n, m, file, comb)
+        __define_constraints(n, m, file, comb, "", 0)
     end
 
     comb = _define_constraints(n-1, m, 1, n+1, [1])
-    __define_constraints(n, m, file, comb)
+    __define_constraints(n, m, file, comb,"",0)
 
     comb = _define_constraints(n-1, m, n, n-1, [n])
     __define_constraints(n, m, file, comb,"",0)
@@ -47,12 +47,24 @@ def __define_constraints(n,m,file,comb,str,sum)
     if comb.length > 0
         head = comb.shift
         1.upto(n**2) do |i|
-            next if sum == m
             __define_constraints(n,m,file, comb, str ++ "¬p(x_#{head}=#{i}) ", sum+i)
         end
         comb.unshift(head)
     else
+        if sum == m
+            return 
+        end
         file.puts str
+    end
+end
+
+def alldiff(n,file)
+    1.upto(n**2) do |i|
+        1.upto(n**2) do |j|
+            (j+1).upto(n**2) do |k|
+                file.puts "¬p(x_#{j}=#{i}) ¬p(x_#{k}=#{i})"
+            end
+        end
     end
 end
 
@@ -70,6 +82,8 @@ def main()
 
     define_variables(n,en_file)
     define_constraints(n,m,en_file)
+
+    alldiff(n,en_file)
 
     en_file.close()
 end
